@@ -102,54 +102,38 @@
         <br>
         <a href="index.html">Back to Previous Page</a>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        // Initialize EmailJS with your User ID
-        emailjs.init('3L35gn-oBy_StqIU3');
+        const myTimeout = setTimeout(myGreeting, 5000);
+        function myGreeting() {
+          document.getElementById("demo").innerHTML = "Contact Me"
+        }
 
         // Handle form submission
-        document.getElementById('form').addEventListener('submit', function(event) {
+        document.getElementById('form').addEventListener('submit', async function(event) {
             event.preventDefault();
 
             // Collect form data
-            var firstName = document.getElementById('firstName').value;
-            var lastName = document.getElementById('lastName').value;
-            var email = document.getElementById('email').value;
-            var age = document.getElementById('age').value;
-            var edu = document.querySelector('input[name="background"]:checked').value;
-            var field = document.getElementById('field').value;
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
 
-            var skill = [];
-            var inputElements = document.getElementsByClassName('skill');
-            for (var i = 0; i < inputElements.length; i++) {
-                if (inputElements[i].checked) {
-                    skill.push(inputElements[i].value);
-                }
-            }
-
-            var msg = document.getElementById('msg').value;
-
-            // Prepare the email template parameters
-            var templateParams = {
-                from_name: firstName + ' ' + lastName,
-                from_email: email,
-                message: msg,
-                age: age,
-                education: edu,
-                field_of_interest: field,
-                programming_skills: skill.join(', ')
-            };
-
-            // Send email using EmailJS
-            emailjs.send('service_79ndlh7', 'template_ttfdjth', templateParams)
-                .then(function(response) {
-                    console.log('SUCCESS!', response.status, response.text);
-                    alert('Email sent successfully!');
-                    document.getElementById('form').reset(); // Reset the form after successful submission
-                }, function(error) {
-                    console.log('FAILED...', error);
-                    alert('Failed to send email. Error: ' + JSON.stringify(error));
+            try {
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' },
                 });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Email sent successfully!');
+                } else {
+                    alert('Failed to send email: ' + result.error);
+                }
+                document.getElementById('form').reset(); // Reset the form after successful submission
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send email. Error: ' + error.message);
+            }
         });
     </script>
 </body>
