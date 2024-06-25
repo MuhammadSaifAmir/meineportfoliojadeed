@@ -88,68 +88,35 @@
     </section>
 
     <footer>&copy; Muhammad Saif Amir Sahik</footer>
-    <script>
-        const myTimeout = setTimeout(myGreeting, 5000);
+    
+    <script>const myTimeout = setTimeout(myGreeting, 5000);
         function myGreeting() {
             document.getElementById("demo").innerHTML = "Contact Me"
         }
-
-        // Handle form submission
         document.getElementById('form').addEventListener('submit', function(event) {
             event.preventDefault();
-
-            // Collect form data
-            var firstName = document.getElementById('firstName').value;
-            var lastName = document.getElementById('lastName').value;
-            var email = document.getElementById('email').value;
-            var age = document.getElementById('age').value;
-            var edu = document.querySelector('input[name="background"]:checked').value;
-            var field = document.getElementById('field').value;
-
-            var skill = [];
-            var inputElements = document.getElementsByClassName('skill');
-            for (var i = 0; i < inputElements.length; i++) {
-                if (inputElements[i].checked) {
-                    skill.push(inputElements[i].value);
-                }
-            }
-
-            var msg = document.getElementById('msg').value;
-
-            // Prepare the email template parameters
-            var templateParams = {
-                from_name: firstName + ' ' + lastName,
-                from_email: email,
-                message: msg,
-                age: age,
-                education: edu,
-                field_of_interest: field,
-                programming_skills: skill.join(', ')
-            };
-
-            // Send email using the serverless function
-            fetch('/.netlify/functions/sendemail', {
+    
+            var formData = new FormData(this);
+            var jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+    
+            fetch('/api/sendemail', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(templateParams)
+                body: JSON.stringify(jsonData),
+                headers: { 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Response data:', data);
-                if (data.message === 'Email sent successfully!') {
+                if (data.success) {
                     alert('Email sent successfully!');
-                    document.getElementById('form').reset(); // Reset the form after successful submission
+                    document.getElementById('form').reset();
                 } else {
                     alert('Failed to send email. Error: ' + JSON.stringify(data.error));
                 }
             })
-            .catch(error => {
-                console.log('Fetch error:', error);
-                alert('Failed to send email. Error: ' + JSON.stringify(error));
-            });
+            .catch(error => alert('Failed to send email. Error: ' + JSON.stringify(error)));
         });
     </script>
+    
 </body>
 </html>
